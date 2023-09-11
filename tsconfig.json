@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "moduleResolution": "node16",
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "node16",
+    "incremental": true,
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist",
+    "preserveSymlinks": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "removeComments": true,
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+    "sourceMap": true
+  },
+  "include": ["lib", "src"],
+  "exclude": ["./dist", "node_modules"]
+}
