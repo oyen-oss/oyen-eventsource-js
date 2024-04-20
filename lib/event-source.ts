@@ -35,7 +35,7 @@ interface OyenEventSourceOptions<T> {
   eventSourceId: string;
   channels: string[];
 
-  logger?: (...data: unknown[]) => void;
+  logger?: (...args: unknown[]) => void;
 
   decoders?: Partial<Record<EncodingType, DecoderFunction<T>>>;
 
@@ -120,9 +120,9 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     }>;
   }>();
 
-  #log = (...data: unknown[]) => {
+  #log = (msg: string, ...data: unknown[]) => {
     if (this.#logger) {
-      this.#logger('ES', ...data);
+      this.#logger('[OES]', msg, ...data);
     }
   };
 
@@ -172,6 +172,10 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
       params.endpoint || 'https://events.oyen.io/',
     );
 
+    if (params.logger) {
+      this.#logger = params.logger;
+    }
+
     source.searchParams.set('accessToken', params.accessToken);
     params.channels.forEach((channel) => {
       source.searchParams.append('channels', channel);
@@ -195,7 +199,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     });
 
     this.#emitter.onAny((event, payload) => {
-      this.#log('onAny', event, payload);
+      this.#log('emitter:onAny', event, payload);
     });
 
     const connectTimer = setTimeout(() => {
@@ -210,7 +214,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     }, timeout);
 
     this.#es.addEventListener('open', (e) => {
-      this.#log('onopen', e);
+      this.#log('es:on:open', e);
       clearTimeout(connectTimer);
       if (this.#es.readyState === ReadyState.OPEN) {
         this.#emitter.emit('open');
@@ -218,10 +222,10 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     });
 
     this.#es.addEventListener('message', async (e: MessageEvent<unknown>) => {
-      this.#log('onmessage', e);
+      this.#log('es:on:message', e);
       try {
         const raw = parseRawMessage(String(e.data));
-        this.#log('onmessage raw', JSON.stringify(raw));
+        this.#log('saw raw', JSON.stringify(raw));
 
         const encodings = raw.enc.split('/') as EncodingType[];
 
@@ -269,7 +273,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     });
 
     this.#es.addEventListener('error', (e) => {
-      this.#log('onerror', e);
+      this.#log('es:on:error', e);
       this.#emitter.emit(
         'error',
         new EventSourceError(

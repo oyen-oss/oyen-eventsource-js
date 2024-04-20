@@ -14,8 +14,8 @@ dependencies:
     specifier: ^12.0.0
     version: 12.0.0
   '@oyen-oss/keys':
-    specifier: ^1.3.0
-    version: 1.3.0
+    specifier: ^1.4.0
+    version: 1.4.0
   emittery:
     specifier: ^1.0.1
     version: 1.0.1
@@ -1898,8 +1898,8 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@oyen-oss/keys@1.3.0:
-    resolution: {integrity: sha512-gtS7YhnkkQzvVA0ddVGXZW1BlzWkD2f7fr+lbNq8xAIi9dukRFABavY2VoEmezSBb0BfNSBYpGkGuLHIH00dvQ==, tarball: https://npm.pkg.github.com/download/@oyen-oss/keys/1.3.0/26171132c1eb1dd11dc90097c70185a76191b005}
+  /@oyen-oss/keys@1.4.0:
+    resolution: {integrity: sha512-GvQLA/UhsWGgJ5gs5/L3trvkjkrKxtW8cCehT50Ux1sgVnYzgGf8s7AbctfQ2EddL6yo8SCwgoC5jqgfG+Vd7A==, tarball: https://npm.pkg.github.com/download/@oyen-oss/keys/1.4.0/1fe1a90fb6369c0a86f5ebe9b388a6f41ffbd7ee}
     engines: {node: '>=18.0.0'}
     dependencies:
       '@block65/custom-error': 12.0.0

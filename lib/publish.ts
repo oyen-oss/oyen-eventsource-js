@@ -39,7 +39,7 @@ export class EventTarget {
   // eslint-disable-next-line class-methods-use-this
   #debug = (..._data: unknown[]) => {
     // eslint-disable-next-line no-console
-    // console.debug('ET', ..._data);
+    // console.debug('[EVT]', ..._data);
   };
 
   constructor(params: {
@@ -77,12 +77,13 @@ export class EventTarget {
     this.#debug({ encoded });
 
     const res = await this.#fetchImpl(
-      new URL(this.#endpoint || 'https://events.oyen.io'),
+      new URL('/publish', this.#endpoint || 'https://events.oyen.io'),
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'content-type': 'application/json',
         },
+        keepalive: true,
         body: JSON.stringify({
           iat: new Date().toISOString(),
           ...message,

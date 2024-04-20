@@ -1,11 +1,16 @@
 import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import { type OyenMessage } from '../src/main.js';
 
+function debug(_msg: string | undefined, ..._data: unknown[]) {
+  // console.log('[SRV]', msg, ...data);
+}
+
 // Keep track of connected clients
 const clients = new Set<ServerResponse<IncomingMessage>>();
 
 // Function to send messages to connected clients
 function sendToClients(message: OyenMessage) {
+  debug('sending %o to %d clients', message, clients.size);
   clients.forEach((client) => {
     client.write(`data: ${JSON.stringify(message)}\n\n`);
   });
@@ -13,7 +18,7 @@ function sendToClients(message: OyenMessage) {
 }
 
 export const server = createServer((req, res) => {
-  // console.log(req.method, req.url);
+  debug(req.method, req.url);
   if (req.headers.accept === 'text/event-stream' && req.method === 'GET') {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -22,6 +27,7 @@ export const server = createServer((req, res) => {
     });
 
     // Add the response to the clients array
+    debug('client connected');
     clients.add(res);
 
     res.write(
@@ -35,6 +41,7 @@ export const server = createServer((req, res) => {
 
     // Handle client disconnect
     req.on('close', () => {
+      debug('client disconnected');
       clients.delete(res);
     });
 
@@ -58,8 +65,13 @@ export const server = createServer((req, res) => {
       res.end('Message published to clients.');
     });
 
+    debug('published message');
+
     return;
   }
-  res.writeHead(200, { 'Content-Type': 'text/html' });
+
+  debug('fall through ded');
+
+  res.writeHead(500, { 'Content-Type': 'text/html' });
   res.end('<h1>ded</h1>');
 });
