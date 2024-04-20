@@ -11,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -25,6 +26,9 @@ jobs:
           scope: '@oyen-oss'
           registry-url: 'https://npm.pkg.github.com/'
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # inspect the npmrc
+      - run: cat /home/runner/work/_temp/.npmrc
 
       - run: make test
 
