@@ -23,7 +23,7 @@ jobs:
           cache: 'pnpm'
           node-version: 20
           scope: '@oyen-oss'
-          registry-url: 'https://npm.pkg.github.com'
+          registry-url: 'https://npm.pkg.github.com/'
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - run: make test
