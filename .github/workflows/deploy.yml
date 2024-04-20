@@ -25,10 +25,8 @@ jobs:
           node-version: 20
           scope: '@oyen-oss'
           registry-url: 'https://npm.pkg.github.com/'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # inspect the npmrc
-      - run: cat /home/runner/work/_temp/.npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: make test
 
