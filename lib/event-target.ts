@@ -7,7 +7,7 @@ import {
   encodeUtf8,
   type EncoderFunction,
 } from './encoders.js';
-import type { DataType, EncodingType, OyenMessage } from './types.js';
+import type { DataType, EncodingType, EventMessage } from './types.js';
 
 const defaultEncoders: Partial<
   Record<DataType | EncodingType, EncoderFunction>
@@ -29,6 +29,10 @@ export class EventTarget {
     init?: RequestInit | undefined,
   ) => Promise<Response>;
 
+  #teamId: string;
+
+  #eventSourceId: string;
+
   public addEncoder(
     encoding: DataType | EncodingType,
     encoder: EncoderFunction,
@@ -37,23 +41,28 @@ export class EventTarget {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  #debug = (..._data: unknown[]) => {
+  #debug = (...data: unknown[]) => {
     // eslint-disable-next-line no-console
-    // console.debug('[EVT]', ..._data);
+    console.debug('[EVT]', ...data);
   };
 
   constructor(params: {
-    endpoint: URL | string;
+    teamId: string;
+    eventSourceId: string;
+    endpoint?: URL | string;
     encoders?: Partial<Record<DataType | EncodingType, EncoderFunction>>;
     fetchImpl?: typeof fetch;
   }) {
-    this.#endpoint = new URL(params.endpoint);
+    this.#teamId = params.teamId;
+    this.#eventSourceId = params.eventSourceId;
+
+    this.#endpoint = new URL(params.endpoint || 'https://events.oyen.io');
     this.#encoders = params.encoders || defaultEncoders;
     this.#fetchImpl = params.fetchImpl || globalThis.fetch.bind(globalThis);
   }
 
   public async publish<T extends Jsonifiable>(
-    message: Omit<OyenMessage<T>, 'iat'>,
+    message: Omit<EventMessage<T>, 'iat'>,
   ): Promise<void> {
     const encodings = message.enc.split('/') as (DataType | EncodingType)[];
 
@@ -77,22 +86,28 @@ export class EventTarget {
     this.#debug({ encoded });
 
     const res = await this.#fetchImpl(
-      new URL('/publish', this.#endpoint || 'https://events.oyen.io'),
+      new URL(
+        `/e/${this.#teamId}/${this.#eventSourceId}/publish`,
+        this.#endpoint,
+      ),
       {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
         },
+
         keepalive: true,
         body: JSON.stringify({
           iat: new Date().toISOString(),
           ...message,
           // TODO: dont cast the type!
           d: encoded as T,
-        } satisfies OyenMessage<T>),
+        } satisfies EventMessage<T>),
       },
     );
 
-    this.#debug({ status: res.status });
+    if (!res.ok) {
+      throw new Error('Failed to publish message');
+    }
   }
 }

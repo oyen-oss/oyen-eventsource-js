@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import { Status } from '@block65/custom-error';
 import Emittery from 'emittery';
 import _ReconnectingEventSourceBroken from 'reconnecting-eventsource';
@@ -17,7 +16,7 @@ import {
   EventSourceParserError,
   EventSourceTimeoutError,
 } from './error.js';
-import type { DataType, EncodingType, OyenMessage } from './types.js';
+import type { DataType, EncodingType, EventMessage } from './types.js';
 
 // busted types?
 type ReconnectingEventSourceType = _ReconnectingEventSourceBroken.default;
@@ -87,7 +86,7 @@ export const enum ReadyState {
 
 function parseRawMessage(encoded: string) {
   try {
-    return JSON.parse(encoded) as OyenMessage<Jsonifiable>;
+    return JSON.parse(encoded) as EventMessage<Jsonifiable>;
   } catch (err) {
     throw new EventSourceParserError(`Error parsing message: ${encoded}`, err);
   }
@@ -101,8 +100,8 @@ export const defaultDecoders = {
   base64url: decodeBase64UrlEncoding,
 } satisfies Partial<Record<EncodingType | DataType, DecoderFunction>>;
 
-export type DecodedOyenMessage<T extends Jsonifiable> = Simplify<
-  Omit<OyenMessage<T>, 'encoding'>
+export type DecodedEventMessage<T extends Jsonifiable> = Simplify<
+  Omit<EventMessage<T>, 'encoding'>
 >;
 
 export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
@@ -112,9 +111,9 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
 
   #emitter = new Emittery<{
     open: undefined;
-    message: DecodedOyenMessage<TMessageData>;
+    message: DecodedEventMessage<TMessageData>;
     error: EventSourceError;
-    exception: DecodedOyenMessage<{
+    exception: DecodedEventMessage<{
       statusCode: Status;
       message?: string;
     }>;
@@ -168,7 +167,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
 
   constructor(params: OyenEventSourceOptions<TMessageData>) {
     const source = new URL(
-      `/${params.teamId}/${params.eventSourceId}`,
+      `/e/${params.teamId}/${params.eventSourceId}/event-stream`,
       params.endpoint || 'https://events.oyen.io/',
     );
 

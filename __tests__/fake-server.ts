@@ -1,15 +1,15 @@
 import { IncomingMessage, ServerResponse, createServer } from 'node:http';
-import { type OyenMessage } from '../src/main.js';
+import type { EventMessage } from '../src/main.js';
 
-function debug(_msg: string | undefined, ..._data: unknown[]) {
-  // console.log('[SRV]', msg, ...data);
+function debug(msg: string | undefined, ...data: unknown[]) {
+  console.log('[SRV]', msg, ...data);
 }
 
 // Keep track of connected clients
 const clients = new Set<ServerResponse<IncomingMessage>>();
 
 // Function to send messages to connected clients
-function sendToClients(message: OyenMessage) {
+function sendToClients(message: EventMessage) {
   debug('sending %o to %d clients', message, clients.size);
   clients.forEach((client) => {
     client.write(`data: ${JSON.stringify(message)}\n\n`);
@@ -36,7 +36,7 @@ export const server = createServer((req, res) => {
         d: '👋',
         enc: 'plain',
         iat: new Date().toISOString(),
-      } satisfies OyenMessage)}\n\n`,
+      } satisfies EventMessage)}\n\n`,
     );
 
     // Handle client disconnect
@@ -48,7 +48,7 @@ export const server = createServer((req, res) => {
     return;
   }
 
-  if (req.url === '/publish' && req.method === 'POST') {
+  if (req.url?.endsWith('/publish') && req.method === 'POST') {
     let body = '';
     req.on('data', (chunk) => {
       body += chunk;
@@ -56,7 +56,7 @@ export const server = createServer((req, res) => {
 
     req.on('end', () => {
       // Extract the message from the request body
-      const message = JSON.parse(body) as OyenMessage;
+      const message = JSON.parse(body);
 
       // Send the message to all connected clients
       sendToClients(message);
