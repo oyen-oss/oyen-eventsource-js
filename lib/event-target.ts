@@ -24,14 +24,11 @@ export class EventTarget {
 
   #encoders: Partial<Record<DataType | EncodingType, EncoderFunction>>;
 
-  #fetchImpl: (
-    input: URL | RequestInfo,
-    init?: RequestInit | undefined,
-  ) => Promise<Response>;
-
   #teamId: string;
 
   #eventSourceId: string;
+
+  #init: Omit<RequestInit, 'body' | 'method'>;
 
   public addEncoder(
     encoding: DataType | EncodingType,
@@ -40,25 +37,26 @@ export class EventTarget {
     this.#encoders[encoding] = encoder;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  #debug = (...data: unknown[]) => {
-    // eslint-disable-next-line no-console
-    console.debug('[EVT]', ...data);
-  };
+  // // eslint-disable-next-line class-methods-use-this
+  // #debug = (...values: unknown[]) => {
+  //   // eslint-disable-next-line no-console
+  //   console.debug('[EVT]', ...values);
+  // };
 
   constructor(params: {
     teamId: string;
     eventSourceId: string;
     endpoint?: URL | string;
     encoders?: Partial<Record<DataType | EncodingType, EncoderFunction>>;
-    fetchImpl?: typeof fetch;
+    init?: RequestInit;
   }) {
     this.#teamId = params.teamId;
     this.#eventSourceId = params.eventSourceId;
 
     this.#endpoint = new URL(params.endpoint || 'https://events.oyen.io');
     this.#encoders = params.encoders || defaultEncoders;
-    this.#fetchImpl = params.fetchImpl || globalThis.fetch.bind(globalThis);
+
+    this.#init = params.init || {};
   }
 
   public async publish<T extends Jsonifiable>(
@@ -68,7 +66,7 @@ export class EventTarget {
 
     const encoded = await encodings.reduce<Promise<unknown>>(
       async (data, encoding) => {
-        this.#debug({ data: await data, encoding });
+        // this.#debug({ data: await data, encoding });
 
         const encoder = this.#encoders[encoding];
 
@@ -83,20 +81,24 @@ export class EventTarget {
       Promise.resolve(message.d),
     );
 
-    this.#debug({ encoded });
+    // this.#debug({ encoded });
 
-    const res = await this.#fetchImpl(
+    const headers = new Headers(this.#init.headers);
+
+    headers.set('content-type', 'application/json');
+
+    const res = await fetch(
       new URL(
         `/e/${this.#teamId}/${this.#eventSourceId}/publish`,
         this.#endpoint,
       ),
       {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
+        ...this.#init,
 
-        keepalive: true,
+        method: 'POST',
+        headers,
+
+        // keepalive: true,
         body: JSON.stringify({
           iat: new Date().toISOString(),
           ...message,

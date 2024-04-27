@@ -28,7 +28,7 @@
     "preversion": "make test"
   },
   "dependencies": {
-    "@block65/custom-error": "^12.0.0",
+    "@block65/custom-error": "^12.1.0",
     "@oyen-oss/keys": "^1.5.1",
     "emittery": "^1.0.3",
     "eventsource": "^2.0.2",
