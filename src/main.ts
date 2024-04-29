@@ -8,6 +8,4 @@ export { createAesCbcDecoder } from '../lib/decoders.js';
 
 export { createAesCbcEncoder } from '../lib/encoders.js';
 
-export { createApiKey } from '@oyen-oss/keys';
-
 export type { EventMessage } from '../lib/types.js';

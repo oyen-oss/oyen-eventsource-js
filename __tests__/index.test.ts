@@ -1,4 +1,4 @@
-import { createApiKey } from '@oyen-oss/keys';
+import { createToken } from '@oyen-oss/keys';
 import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { createAesCbcDecoder } from '../lib/decoders.js';
 import { createAesCbcEncoder } from '../lib/encoders.js';
@@ -32,15 +32,15 @@ describe('Basic', () => {
     const openFn = vi.fn(async () => {});
     const messageFn = vi.fn(async () => {});
 
-    const publishKey = await createApiKey({
+    const publishKey = await createToken({
       privateKey,
-      teamId,
+
       ttlSecs: 3600,
       claims: {
         sub: teamId,
         scopes: {
           keys: ['list'],
-          [`events/${eventSourceId}/channels/*`]: ['publish'],
+          [`teams/${teamId}/events/${eventSourceId}/channels/*`]: ['publish'],
         },
       },
     });
@@ -83,7 +83,8 @@ describe('Basic', () => {
 
     const target = new EventTarget({
       endpoint,
-      fetchImpl: fetch,
+      teamId,
+      eventSourceId,
     });
 
     await Promise.all([

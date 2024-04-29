@@ -1,6 +1,10 @@
 /* eslint-disable max-classes-per-file */
 import { CustomError, Status } from '@block65/custom-error';
 
+export class EventTargetError extends CustomError {
+  public override code = Status.UNKNOWN;
+}
+
 export class EventSourceError extends CustomError {
   public override code = Status.UNKNOWN;
 }

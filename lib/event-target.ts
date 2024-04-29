@@ -7,6 +7,7 @@ import {
   encodeUtf8,
   type EncoderFunction,
 } from './encoders.js';
+import { EventTargetError } from './error.js';
 import type { DataType, EncodingType, EventMessage } from './types.js';
 
 const defaultEncoders: Partial<
@@ -65,7 +66,7 @@ export class EventTarget {
     const encodings = message.enc.split('/') as (DataType | EncodingType)[];
 
     const encoded = await encodings.reduce<Promise<unknown>>(
-      async (data, encoding) => {
+      async (promise, encoding) => {
         // this.#debug({ data: await data, encoding });
 
         const encoder = this.#encoders[encoding];
@@ -76,7 +77,7 @@ export class EventTarget {
           );
         }
 
-        return encoder(await data, encoding);
+        return promise.then((data) => encoder(data, encoding));
       },
       Promise.resolve(message.d),
     );
@@ -84,32 +85,35 @@ export class EventTarget {
     // this.#debug({ encoded });
 
     const headers = new Headers(this.#init.headers);
+    headers.set('content-type', 'application/json; charset=utf-8');
 
-    headers.set('content-type', 'application/json');
+    const init = {
+      ...this.#init,
 
-    const res = await fetch(
-      new URL(
-        `/e/${this.#teamId}/${this.#eventSourceId}/publish`,
-        this.#endpoint,
-      ),
-      {
-        ...this.#init,
+      method: 'POST',
+      headers,
 
-        method: 'POST',
-        headers,
+      // keepalive: true,
+      body: JSON.stringify({
+        iat: new Date().toISOString(),
+        ...message,
+        // TODO: dont cast the type!
+        d: encoded as T,
+      } satisfies EventMessage<T>),
+    };
 
-        // keepalive: true,
-        body: JSON.stringify({
-          iat: new Date().toISOString(),
-          ...message,
-          // TODO: dont cast the type!
-          d: encoded as T,
-        } satisfies EventMessage<T>),
-      },
+    const url = new URL(
+      `/e/${this.#teamId}/${this.#eventSourceId}/publish`,
+      this.#endpoint,
     );
 
+    const res = await fetch(url, init);
+
     if (!res.ok) {
-      throw new Error('Failed to publish message');
+      throw new EventTargetError('Failed to publish message').debug({
+        url: url.toString(),
+        init,
+      });
     }
   }
 }
