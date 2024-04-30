@@ -17,8 +17,8 @@ importers:
         specifier: ^12.1.0
         version: 12.1.0
       '@oyen-oss/keys':
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.1.0
+        version: 2.1.0
       emittery:
         specifier: ^1.0.3
         version: 1.0.3
@@ -931,8 +931,8 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oyen-oss/keys@2.0.0':
-    resolution: {integrity: sha512-SwhRVM9B8FB12i1TvolKyqiP7/9jgIF01INikg6NfQtp8XeAUV39IuPcksBEGKjZYWVzohocDTfG0UImNQTnxw==, tarball: https://npm.pkg.github.com/download/@oyen-oss/keys/2.0.0/e7a55dd56bbbd0a68a1d9679e3c2f5da37ca1ee0}
+  '@oyen-oss/keys@2.1.0':
+    resolution: {integrity: sha512-3q/9ns+8WhImNoZuc1Yr+x4PVqvLKof3jUsLCf3iRXH6kIPWFh2lVOsacYCvjrkLqkfC7WvsnPXR3FyLNlosRQ==, tarball: https://npm.pkg.github.com/download/@oyen-oss/keys/2.1.0/fba7da8aeb3d4b939f3fedca181e79fd53a0dd0e}
     engines: {node: '>=18.0.0'}
 
   '@pkgjs/parseargs@0.11.0':
@@ -3588,7 +3588,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@oyen-oss/keys@2.0.0':
+  '@oyen-oss/keys@2.1.0':
     dependencies:
       '@block65/custom-error': 12.1.0
       base64-arraybuffer: 1.0.2
