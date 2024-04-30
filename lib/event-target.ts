@@ -20,7 +20,7 @@ const defaultEncoders: Partial<
   json: encodeJson,
 };
 
-export class EventTarget {
+export class EventTarget<T extends Jsonifiable, C extends string = string> {
   #endpoint: URL;
 
   #encoders: Partial<Record<DataType | EncodingType, EncoderFunction>>;
@@ -31,6 +31,8 @@ export class EventTarget {
 
   #init: Omit<RequestInit, 'body' | 'method'>;
 
+  #logger?: { debug?: (...args: unknown[]) => void };
+
   public addEncoder(
     encoding: DataType | EncodingType,
     encoder: EncoderFunction,
@@ -38,18 +40,15 @@ export class EventTarget {
     this.#encoders[encoding] = encoder;
   }
 
-  // // eslint-disable-next-line class-methods-use-this
-  // #debug = (...values: unknown[]) => {
-  //   // eslint-disable-next-line no-console
-  //   console.debug('[EVT]', ...values);
-  // };
-
   constructor(params: {
     teamId: string;
     eventSourceId: string;
     endpoint?: URL | string;
     encoders?: Partial<Record<DataType | EncodingType, EncoderFunction>>;
     init?: RequestInit;
+    logger?: {
+      debug?: (...args: unknown[]) => void;
+    };
   }) {
     this.#teamId = params.teamId;
     this.#eventSourceId = params.eventSourceId;
@@ -58,17 +57,19 @@ export class EventTarget {
     this.#encoders = params.encoders || defaultEncoders;
 
     this.#init = params.init || {};
+
+    if (params.logger) {
+      this.#logger = params.logger;
+    }
   }
 
-  public async publish<T extends Jsonifiable>(
-    message: Omit<EventMessage<T>, 'iat'>,
+  public async publish(
+    message: Omit<EventMessage<T, C>, 'iat'>,
   ): Promise<void> {
     const encodings = message.enc.split('/') as (DataType | EncodingType)[];
 
-    const encoded = await encodings.reduce<Promise<unknown>>(
+    const maybeEncoded = await encodings.reduce<Promise<unknown>>(
       async (promise, encoding) => {
-        // this.#debug({ data: await data, encoding });
-
         const encoder = this.#encoders[encoding];
 
         if (!encoder) {
@@ -81,8 +82,6 @@ export class EventTarget {
       },
       Promise.resolve(message.d),
     );
-
-    // this.#debug({ encoded });
 
     const headers = new Headers(this.#init.headers);
     headers.set('content-type', 'application/json; charset=utf-8');
@@ -98,7 +97,7 @@ export class EventTarget {
         iat: new Date().toISOString(),
         ...message,
         // TODO: dont cast the type!
-        d: encoded as T,
+        d: maybeEncoded as T,
       } satisfies EventMessage<T>),
     };
 
@@ -107,7 +106,19 @@ export class EventTarget {
       this.#endpoint,
     );
 
+    this.#logger?.debug?.({ url, ...init }, 'request');
+
     const res = await fetch(url, init);
+
+    this.#logger?.debug?.(
+      {
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+      },
+      'response',
+    );
 
     if (!res.ok) {
       throw new EventTargetError('Failed to publish message').debug({

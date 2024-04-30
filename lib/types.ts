@@ -15,8 +15,11 @@ export type Encoding =
   | 'json/utf-8/cipher+aes-256-cbc/base64'
   | 'json/utf-8/cipher+aes-256-cbc/base64url';
 
-export type EventMessage<T extends Jsonifiable = Jsonifiable> = {
-  ch: string;
+export type EventMessage<
+  T extends Jsonifiable = Jsonifiable,
+  C extends string = string,
+> = {
+  ch: C;
   d: T;
   enc: Encoding;
   iat: string;
