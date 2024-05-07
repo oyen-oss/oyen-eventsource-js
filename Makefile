@@ -10,7 +10,7 @@ clean: node_modules
 .PHONY: test
 test: node_modules
 	pnpm exec tsc
-	NODE_OPTIONS=--experimental-vm-modules pnpm exec vitest
+	pnpm exec vitest
 
 node_modules: package.json
 	pnpm install
