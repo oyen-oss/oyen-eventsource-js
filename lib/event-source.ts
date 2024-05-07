@@ -29,7 +29,7 @@ export interface EventSourceWithoutUrl extends EventSource {
   constructor(url: string, eventSourceInitDict?: EventSourceInit): void;
 }
 
-interface OyenEventSourceOptions<T> {
+export interface OyenEventSourceOptions<T> {
   teamId: string;
   eventSourceId: string;
   channels: string[];
