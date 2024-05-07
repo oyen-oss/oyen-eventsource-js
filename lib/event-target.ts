@@ -92,7 +92,6 @@ export class EventTarget<T extends Jsonifiable, C extends string = string> {
       method: 'POST',
       headers,
 
-      // keepalive: true,
       body: JSON.stringify({
         iat: new Date().toISOString(),
         ...message,

@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse, createServer } from 'node:http';
 import type { EventMessage } from '../src/main.js';
 
 function debug(msg: string | undefined, ...data: unknown[]) {
-  console.log('[SRV]', msg, ...data);
+  // eslint-disable-next-line no-console
+  console.debug('[SRV]', msg, ...data);
 }
 
 // Keep track of connected clients
@@ -23,7 +24,6 @@ export const server = createServer((req, res) => {
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
     });
 
     // Add the response to the clients array
