@@ -1,6 +1,9 @@
 export { EventSourceError } from '../lib/error.js';
 
-export { OyenEventSource, ReadyState } from '../lib/event-source.js';
+export {
+  OyenEventStream,
+  ReadyState,
+} from '../lib/event-source.js';
 
 export { EventTarget } from '../lib/event-target.js';
 

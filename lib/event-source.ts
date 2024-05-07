@@ -104,7 +104,7 @@ export type DecodedEventMessage<T extends Jsonifiable> = Simplify<
   Omit<EventMessage<T>, 'encoding'>
 >;
 
-export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
+export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
   #es: ReconnectingEventSourceType;
 
   #logger?: (...args: unknown[]) => void;

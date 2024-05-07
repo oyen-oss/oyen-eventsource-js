@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { createAesCbcDecoder } from '../lib/decoders.js';
 import { createAesCbcEncoder } from '../lib/encoders.js';
 import { EventTarget } from '../lib/event-target.js';
-import { OyenEventSource } from '../src/main.js';
+import { OyenEventStream } from '../src/main.js';
 import { EventSource } from '../src/polyfill.js';
 import { server } from './fake-server.js';
 
@@ -47,7 +47,7 @@ describe('Basic', () => {
 
     const endpoint = `http://localhost:${listenPort}/`;
 
-    const eventSource = new OyenEventSource({
+    const eventSource = new OyenEventStream({
       teamId,
       eventSourceId,
       channels: ['test'],
