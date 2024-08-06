@@ -28,5 +28,5 @@ pretty: node_modules
 	pnpm exec prettier --write .
 
 .PHONY: dry-run
-dry-run:
+dry-run: dist
 	pnpm publish --dry-run
