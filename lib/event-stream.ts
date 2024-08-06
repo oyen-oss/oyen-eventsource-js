@@ -181,22 +181,6 @@ export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
       onScheduleReconnect: (info) => {
         this.#log('reconnecting in %sms', info.delay);
       },
-      // onMessage: async (message) => {
-      //   switch (message.event) {
-      //     default: {
-      //       const decoded = await this.decode(message);
-      //       if (decoded) {
-      //         this.#emitter.emit('message', decoded);
-      //       } else {
-      //         this.#emitter.emit('error', {
-      //           ch: 'error',
-      //           d: message.data,
-      //           iat: Date.now(),
-      //         });
-      //       }
-      //     }
-      //   }
-      // },
     });
   }
 
@@ -248,6 +232,5 @@ export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
     }
 
     return null;
-    // return raw;
   }
 }

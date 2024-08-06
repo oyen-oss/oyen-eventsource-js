@@ -1,4 +1,4 @@
-import { encodeBase64, encodeBase64Url } from '@oyen-oss/keys/base64';
+import { uint8ArrayToBase64, uint8ArrayToBase64Url } from '@oyen-oss/keys';
 import type { Jsonifiable } from 'type-fest';
 import { EventSourceEncoderError } from './error.js';
 import type { DataType, EncodingType } from './types.js';
@@ -78,12 +78,12 @@ export const encodeUtf8: EncoderFunction = ((data, encoding) => {
 
 export const encodeBase64Encoding: EncoderFunction = ((data, encoding) => {
   assertArrayBufferEncoding(data, encoding);
-  return encodeBase64(data);
+  return uint8ArrayToBase64(new Uint8Array(data));
 }) satisfies EncoderFunction;
 
 export const encodeBase64UrlEncoding: EncoderFunction = ((data, encoding) => {
   assertArrayBufferEncoding(data, encoding);
-  return encodeBase64Url(data);
+  return uint8ArrayToBase64Url(new Uint8Array(data));
 }) satisfies EncoderFunction;
 
 export function createAesCbcEncoder(keyBytes: ArrayBuffer): EncoderFunction {

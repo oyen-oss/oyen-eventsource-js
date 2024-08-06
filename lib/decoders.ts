@@ -1,4 +1,4 @@
-import { decodeBase64, decodeBase64Url } from '@oyen-oss/keys/base64';
+import { base64ToUint8Array, base64UrlToUint8Array } from '@oyen-oss/keys';
 import { EventSourceDecoderError } from './error.js';
 import type { EncodingType } from './types.js';
 
@@ -64,7 +64,7 @@ export function decodeBase64Encoding(
   encoding: EncodingType,
 ) {
   assertStringEncoding(data, encoding);
-  return decodeBase64(data);
+  return base64ToUint8Array(data);
 }
 
 export function decodeBase64UrlEncoding(
@@ -72,7 +72,7 @@ export function decodeBase64UrlEncoding(
   encoding: EncodingType,
 ) {
   assertStringEncoding(data, encoding);
-  return decodeBase64Url(data);
+  return base64UrlToUint8Array(data);
 }
 
 export function createAesCbcDecoder(keyBytes: ArrayBuffer) {

@@ -10,7 +10,7 @@ clean: node_modules
 .PHONY: test
 test: node_modules
 	pnpm exec tsc
-	pnpm exec vitest
+	pnpm exec vitest run
 
 node_modules: package.json
 	pnpm install
