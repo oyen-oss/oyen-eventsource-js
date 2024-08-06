@@ -10,8 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
-      - run: make test
+      - uses: actions/setup-node@v4
+        with:
+          cache: 'pnpm'
+          scope: '@oyen-oss'
+          registry-url: 'https://npm.pkg.github.com/'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
