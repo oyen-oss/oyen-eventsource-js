@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
-  extends: ['@block65/eslint-config/typescript'],
+  extends: ['@block65/eslint-config', '@block65/eslint-config/typescript'],
   parserOptions: {
-    project: ['./tsconfig.json'],
+    project: ['./tsconfig.json', './test/tsconfig.json'],
   },
 };

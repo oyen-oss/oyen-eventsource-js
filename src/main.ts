@@ -1,13 +1,13 @@
 export { EventSourceError } from '../lib/error.js';
 
 export {
-  OyenEventStream,
-  type OyenEventStreamOptions,
-} from '../lib/event-stream.js';
+  OyenEventSource,
+  type OyenEventSourceOptions,
+} from '../lib/event-source.js';
 
-export type { ReadyState } from '../lib/event-stream.js';
+export type { ReadyState } from '../lib/event-source.js';
 
-export { EventTarget } from '../lib/event-target.js';
+export { OyenEventTarget } from '../lib/event-target.js';
 
 export { createAesCbcDecoder } from '../lib/decoders.js';
 

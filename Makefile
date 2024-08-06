@@ -26,3 +26,7 @@ dist-watch: node_modules
 pretty: node_modules
 	pnpm exec eslint --fix . || true
 	pnpm exec prettier --write .
+
+.PHONY: dry-run
+dry-run:
+	pnpm publish --dry-run

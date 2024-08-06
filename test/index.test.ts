@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 import { createAesCbcDecoder } from '../lib/decoders.js';
 import { createAesCbcEncoder } from '../lib/encoders.js';
-import { EventTarget } from '../lib/event-target.js';
-import { OyenEventStream } from '../src/main.js';
+import { OyenEventTarget } from '../lib/event-target.js';
+import { OyenEventSource } from '../src/main.js';
 import { server } from './fake-server.js';
 
 const listenPort = process.env.PORT || 3000;
@@ -25,7 +25,7 @@ test('Nothing', async () => {
   const accessToken = 'e30.e30.';
   const endpoint = `http://localhost:${listenPort}/`;
 
-  const eventSource = new OyenEventStream({
+  const eventSource = new OyenEventSource({
     teamId,
     eventSourceId,
     channels: ['sys'],
@@ -47,7 +47,7 @@ test('Nothing', async () => {
     d: '👋',
   });
 
-  const target = new EventTarget({
+  const target = new OyenEventTarget({
     endpoint,
     teamId,
     eventSourceId,

@@ -27,6 +27,6 @@
     "skipLibCheck": true,
     "sourceMap": true
   },
-  "include": ["lib", "src"],
+  "include": ["lib", "src", "example"],
   "exclude": ["./dist", "node_modules"]
 }
