@@ -5,13 +5,23 @@ on:
     branches: ['main']
 
 jobs:
-  publish-npm:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
-          version: 8
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          scope: '@oyen-oss'
+          registry-url: 'https://npm.pkg.github.com/'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: make test

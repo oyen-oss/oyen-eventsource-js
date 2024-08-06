@@ -89,8 +89,8 @@ export class EventTarget<T extends Jsonifiable, C extends string = string> {
     const init = {
       ...this.#init,
 
-      method: 'POST',
-      headers,
+      method: 'post',
+      headers, // inherits from this.#init above
 
       body: JSON.stringify({
         iat: new Date().toISOString(),
