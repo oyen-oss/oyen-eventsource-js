@@ -3,7 +3,7 @@ import type { EventMessage } from '../src/main.js';
 
 function debug(msg: string | undefined, ...data: unknown[]) {
   // eslint-disable-next-line no-console
-  console.debug('[SRV]', msg, ...data);
+  console.debug(`[SRV] ${msg}`, ...data);
 }
 
 // Keep track of connected clients
