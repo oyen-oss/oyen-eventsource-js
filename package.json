@@ -25,8 +25,8 @@
   },
   "dependencies": {
     "@block65/custom-error": "^12.2.0",
-    "@oyen-oss/keys": "3.0.0",
-    "eventsource-client": "^1.1.2"
+    "eventsource-client": "^1.1.2",
+    "uint8array-extras": "^1.4.0"
   },
   "devDependencies": {
     "@block65/bundlesize": "^1.0.1",

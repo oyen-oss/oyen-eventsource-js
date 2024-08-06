@@ -1,27 +1,9 @@
-/// <reference types="node" />
-import { signToken } from '@oyen-oss/keys';
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 import { createAesCbcDecoder } from '../lib/decoders.js';
 import { createAesCbcEncoder } from '../lib/encoders.js';
 import { EventTarget } from '../lib/event-target.js';
 import { OyenEventStream } from '../src/main.js';
 import { server } from './fake-server.js';
-
-const keys = await crypto.subtle
-  .generateKey(
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256',
-    },
-    true,
-    ['sign', 'verify'],
-  )
-  .then(async (keyPair) => ({
-    id: crypto.randomUUID().slice(0, 6),
-    ...keyPair,
-    privateKeyJwk: await crypto.subtle.exportKey('jwk', keyPair.privateKey),
-    publicKeyJwk: await crypto.subtle.exportKey('jwk', keyPair.publicKey),
-  }));
 
 const listenPort = process.env.PORT || 3000;
 
@@ -40,18 +22,7 @@ const eventSourceId = 'eeeeee';
 test('Nothing', async () => {
   const errorFn = vi.fn(async () => {});
 
-  const accessToken = await signToken(keys.privateKeyJwk, {
-    kid: keys.id,
-    ttlSecs: 3600,
-    claims: {
-      sub: teamId,
-      scopes: {
-        keys: ['list'],
-        [`teams/${teamId}/events/${eventSourceId}/channels/*`]: ['publish'],
-      },
-    },
-  });
-
+  const accessToken = 'e30.e30.';
   const endpoint = `http://localhost:${listenPort}/`;
 
   const eventSource = new OyenEventStream({

@@ -1,8 +1,13 @@
-import { base64ToUint8Array, base64UrlToUint8Array } from '@oyen-oss/keys';
+import type { JsonObject } from 'type-fest';
+import { base64ToUint8Array } from 'uint8array-extras';
 import { EventSourceDecoderError } from './error.js';
 import type { EncodingType } from './types.js';
 
 type TAllowableMessageDecoding = unknown;
+
+function withNullProto<T extends JsonObject>(obj: T): T {
+  return Object.assign(Object.create(null), obj);
+}
 
 export function assertStringEncoding(
   data: TAllowableMessageDecoding,
@@ -47,8 +52,8 @@ export function decodeJson(
   encoding: EncodingType,
 ) {
   assertStringEncoding(data, encoding);
-
-  return JSON.parse(data);
+  const parsed = JSON.parse(data);
+  return typeof parsed === 'object' ? withNullProto(parsed) : parsed;
 }
 
 export function decodeUtf8(
@@ -72,7 +77,7 @@ export function decodeBase64UrlEncoding(
   encoding: EncodingType,
 ) {
   assertStringEncoding(data, encoding);
-  return base64UrlToUint8Array(data);
+  return base64ToUint8Array(data);
 }
 
 export function createAesCbcDecoder(keyBytes: ArrayBuffer) {
