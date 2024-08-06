@@ -19,7 +19,7 @@ import type { DataType, EncodingType, EventMessage } from './types.js';
 
 export type { ReadyState } from 'eventsource-client';
 
-export interface OyenEventStreamOptions<T> {
+export interface OyenEventSourceOptions<T> {
   teamId: string;
   eventSourceId: string;
   channels: string[];
@@ -29,41 +29,21 @@ export interface OyenEventStreamOptions<T> {
   decoders?: Partial<Record<EncodingType, DecoderFunction<T>>>;
 
   /**
-   * JWT access token
+   * JWT access token for oyen.io
    */
   accessToken: string;
-
-  // /**
-  //  * Timeout for initial connection in seconds
-  //  */
-  // timeoutSecs?: number;
 
   /**
    * Endpoint URL
    */
   endpoint?: string | URL;
 
-  // /**
-  //  * Reconnect interval in seconds
-  //  * @default 5
-  //  *
-  //  */
-  // reconnectIntervalSecs?: number;
-
-  // /**
-  //  * If you want to receive events that happened before you connected, pass the
-  //  * lastEventId
-  //  *
-  //  */
-  // lastEventId?: number;
-
-  // /**
-  //  * EventSource options
-  //  */
-  // eventSourceInit?: EventSourceInit;
-
   options?: Pick<EventSourceOptions, 'fetch'>;
 }
+
+export type DecodedEventMessage<T extends Jsonifiable> = Simplify<
+  Omit<EventMessage<T>, 'enc'>
+>;
 
 function parseRawMessage<T extends Jsonifiable>(encoded: string) {
   try {
@@ -73,17 +53,13 @@ function parseRawMessage<T extends Jsonifiable>(encoded: string) {
   }
 }
 
-export const defaultDecoders = {
+const defaultDecoders = {
   plain: decodePlain,
   json: decodeJson,
   'utf-8': decodeUtf8,
   base64: decodeBase64Encoding,
   base64url: decodeBase64UrlEncoding,
 } satisfies Partial<Record<EncodingType | DataType, DecoderFunction>>;
-
-export type DecodedEventMessage<T extends Jsonifiable> = Simplify<
-  Omit<EventMessage<T>, 'enc'>
->;
 
 function deferred<T extends void>() {
   let resolve: (value: T | PromiseLike<T>) => void = () => {};
@@ -96,13 +72,13 @@ function deferred<T extends void>() {
   return { promise, resolve, reject };
 }
 
-export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
+export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
   readonly #es: EventSourceClient;
 
   readonly #logger: ((...args: unknown[]) => void) | undefined;
 
   readonly #log = (msg: string, ...args: unknown[]) => {
-    this.#logger?.(`[eventstream] ${msg}`, ...args);
+    this.#logger?.(`[eventsource] ${msg}`, ...args);
   };
 
   readonly #decoders: Partial<Record<EncodingType, DecoderFunction>>;
@@ -145,7 +121,7 @@ export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
     return true;
   }
 
-  constructor(params: OyenEventStreamOptions<TMessageData>) {
+  constructor(params: OyenEventSourceOptions<TMessageData>) {
     if (params.logger) {
       this.#logger = params.logger;
     }
@@ -181,22 +157,6 @@ export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
       onScheduleReconnect: (info) => {
         this.#log('reconnecting in %sms', info.delay);
       },
-      // onMessage: async (message) => {
-      //   switch (message.event) {
-      //     default: {
-      //       const decoded = await this.decode(message);
-      //       if (decoded) {
-      //         this.#emitter.emit('message', decoded);
-      //       } else {
-      //         this.#emitter.emit('error', {
-      //           ch: 'error',
-      //           d: message.data,
-      //           iat: Date.now(),
-      //         });
-      //       }
-      //     }
-      //   }
-      // },
     });
   }
 
@@ -248,6 +208,5 @@ export class OyenEventStream<TMessageData extends Jsonifiable = Jsonifiable> {
     }
 
     return null;
-    // return raw;
   }
 }

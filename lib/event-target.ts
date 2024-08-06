@@ -20,7 +20,7 @@ const defaultEncoders: Partial<
   json: encodeJson,
 };
 
-export class EventTarget<T extends Jsonifiable, C extends string = string> {
+export class OyenEventTarget<T extends Jsonifiable, C extends string = string> {
   #endpoint: URL;
 
   #encoders: Partial<Record<DataType | EncodingType, EncoderFunction>>;
@@ -36,8 +36,9 @@ export class EventTarget<T extends Jsonifiable, C extends string = string> {
   public addEncoder(
     encoding: DataType | EncodingType,
     encoder: EncoderFunction,
-  ): void {
+  ) {
     this.#encoders[encoding] = encoder;
+    return this;
   }
 
   constructor(params: {
@@ -88,10 +89,8 @@ export class EventTarget<T extends Jsonifiable, C extends string = string> {
 
     const init = {
       ...this.#init,
-
       method: 'post',
-      headers, // inherits from this.#init above
-
+      headers, // already inherits from this.#init.headers ^^
       body: JSON.stringify({
         iat: new Date().toISOString(),
         ...message,

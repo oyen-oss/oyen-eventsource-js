@@ -10,7 +10,7 @@ clean: node_modules
 .PHONY: test
 test: node_modules
 	pnpm exec tsc
-	pnpm exec vitest
+	pnpm exec vitest run
 
 node_modules: package.json
 	pnpm install
@@ -26,3 +26,7 @@ dist-watch: node_modules
 pretty: node_modules
 	pnpm exec eslint --fix . || true
 	pnpm exec prettier --write .
+
+.PHONY: dry-run
+dry-run: dist
+	pnpm publish --dry-run
