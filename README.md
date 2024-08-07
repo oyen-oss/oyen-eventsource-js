@@ -52,10 +52,6 @@ const [, received] = await Promise.all([
 console.log('received:', received); //  { ch: 'test', secretMessage: '👋' }
 ```
 
-## Testing
-
-Top tip: Decode JWTs quickly online at https://jwt.one
-
 ## License
 
 Licensed under the terms of the MIT license. See the [LICENSE](LICENSE.md) file for more details.
