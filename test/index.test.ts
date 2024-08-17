@@ -31,6 +31,8 @@ test('Nothing', async () => {
     channels: ['sys'],
     accessToken,
     endpoint,
+    // eslint-disable-next-line no-console
+    logger: console.log,
   });
 
   const randomEncryptionKey = crypto.getRandomValues(new Uint8Array(32));
