@@ -24,3 +24,8 @@ export type EventMessage<
   enc: Encoding;
   iat: string;
 };
+
+export type DecodedEventMessage<T extends Jsonifiable> = Omit<
+  EventMessage<T>,
+  'enc'
+>;

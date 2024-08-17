@@ -1,6 +1,6 @@
 SRCS = $(wildcard lib/**)
 
-all: test dist
+all: dist
 
 .PHONY: clean
 clean: node_modules

@@ -4,7 +4,7 @@ import {
   createAesCbcEncoder,
   OyenEventSource,
   OyenEventTarget,
-} from '@oyen-oss/eventsource';
+} from '@oyenjs/eventsource';
 
 const teamId = 'example';
 const eventSourceId = 'abcd12345';
@@ -36,7 +36,7 @@ const [, received] = await Promise.all([
     },
     enc: 'json',
   }),
-  source.once('message'),
+  source.once(),
 ]);
 
 console.log('received:', received); //  { ch: 'test', secretMessage: '👋' }
