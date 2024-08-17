@@ -41,7 +41,8 @@ test('Nothing', async () => {
   );
 
   // wait for helo
-  const message = await eventSource.once('message');
+  const message = await eventSource.once();
+
   expect(message).toMatchObject({
     ch: 'sys',
     d: '👋',
@@ -61,7 +62,7 @@ test('Nothing', async () => {
       },
       enc: 'json',
     }),
-    eventSource.once('message'),
+    eventSource.once(),
   ]);
 
   await Promise.all([
@@ -73,7 +74,7 @@ test('Nothing', async () => {
       enc: 'json',
     }),
 
-    eventSource.once('message'),
+    eventSource.once(),
   ]);
 
   target.addEncoder(
@@ -90,7 +91,7 @@ test('Nothing', async () => {
       enc: 'json/utf-8/cipher+aes-256-cbc/base64',
     }),
 
-    eventSource.once('message'),
+    eventSource.once(),
   ]);
 
   expect(errorFn).not.toHaveBeenCalled();
