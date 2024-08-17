@@ -3,9 +3,10 @@ import {
   type EventSourceClient,
   type EventSourceMessage,
   type EventSourceOptions,
+  type FetchLike,
   type ReadyState,
 } from 'eventsource-client';
-import type { Jsonifiable, Simplify } from 'type-fest';
+import type { Jsonifiable } from 'type-fest';
 import {
   decodeBase64Encoding,
   decodeBase64UrlEncoding,
@@ -14,8 +15,14 @@ import {
   decodeUtf8,
   type DecoderFunction,
 } from './decoders.js';
-import { EventSourceParserError } from './error.js';
-import type { DataType, EncodingType, EventMessage } from './types.js';
+import { EventSourceError, EventSourceParserError } from './error.js';
+import type {
+  DataType,
+  DecodedEventMessage,
+  EncodingType,
+  EventMessage,
+} from './types.js';
+import { deferred, errToStr } from './utils.js';
 
 export type { ReadyState } from 'eventsource-client';
 
@@ -38,12 +45,14 @@ export interface OyenEventSourceOptions<T> {
    */
   endpoint?: string | URL;
 
-  options?: Pick<EventSourceOptions, 'fetch'>;
+  /**
+   * Options to pass to 'eventsource-client'
+   */
+  eventSourceOptions?: Omit<
+    EventSourceOptions,
+    'url' | 'onConnect' | 'onDisconnect' | 'onMessage' | 'onScheduleReconnect'
+  >;
 }
-
-export type DecodedEventMessage<T extends Jsonifiable> = Simplify<
-  Omit<EventMessage<T>, 'enc'>
->;
 
 function parseRawMessage<T extends Jsonifiable>(encoded: string) {
   try {
@@ -61,15 +70,16 @@ const defaultDecoders = {
   base64url: decodeBase64UrlEncoding,
 } satisfies Partial<Record<EncodingType | DataType, DecoderFunction>>;
 
-function deferred<T extends void>() {
-  let resolve: (value: T | PromiseLike<T>) => void = () => {};
-  let reject: (err: Error) => void = () => {};
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-
-  return { promise, resolve, reject };
+function validateDecodedMessage<TMessageData extends Jsonifiable = Jsonifiable>(
+  message: DecodedEventMessage<TMessageData> | unknown,
+): message is DecodedEventMessage<TMessageData> {
+  return (
+    message !== null &&
+    typeof message === 'object' &&
+    'iat' in message &&
+    'ch' in message &&
+    'd' in message
+  );
 }
 
 export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
@@ -78,19 +88,16 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
   readonly #logger: ((...args: unknown[]) => void) | undefined;
 
   readonly #log = (msg: string, ...args: unknown[]) => {
-    this.#logger?.(`[eventsource] ${msg}`, ...args);
+    this.#logger?.(`${new Date().toISOString()} [eventsource] ${msg}`, ...args);
+  };
+
+  readonly #warn = (msg: string, ...args: unknown[]) => {
+    this.#log(`!WARN! ${msg}`, ...args);
   };
 
   readonly #decoders: Partial<Record<EncodingType, DecoderFunction>>;
 
-  readonly #connectPromise: Promise<void>;
-
-  public async once(event?: 'message') {
-    const { value, done } = await this.listen(
-      event === 'message' ? undefined : event,
-    ).next();
-    return done ? null : value;
-  }
+  #connectionMonitor = deferred();
 
   public get readyState(): ReadyState {
     return this.#es.readyState;
@@ -105,7 +112,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
   }
 
   public get connected() {
-    return this.#connectPromise.then(() => {});
+    return this.#connectionMonitor.promise.then(() => {});
   }
 
   public addDecoder(
@@ -116,16 +123,7 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     return this;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  #validateMessage(_: unknown): _ is TMessageData {
-    return true;
-  }
-
   constructor(params: OyenEventSourceOptions<TMessageData>) {
-    if (params.logger) {
-      this.#logger = params.logger;
-    }
-
     const url = new URL(
       `/e/${params.teamId}/${params.eventSourceId}/event-stream`,
       params.endpoint || 'https://events.oyen.io/',
@@ -137,49 +135,72 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
     });
 
     this.#decoders = params.decoders || defaultDecoders;
+    this.#logger = params.logger;
 
-    const connectPromise = deferred();
-
-    this.#connectPromise = connectPromise.promise;
+    this.#connectionMonitor = deferred();
 
     this.#es = createEventSource({
+      ...params.eventSourceOptions,
       url: new URL(url),
       onConnect: () => {
-        this.#log('connected');
-        connectPromise.resolve();
+        this.#connectionMonitor.resolve();
+        this.#log('connected to %s', url);
       },
       onDisconnect: () => {
-        this.#log('disconnected');
+        this.#connectionMonitor = deferred();
+        this.#log('disconnected from %s', url);
       },
-      onMessage: (message) => {
-        this.#log('got message', message);
+      onMessage: () => {
+        this.#connectionMonitor.resolve();
       },
       onScheduleReconnect: (info) => {
-        this.#log('reconnecting in %sms', info.delay);
+        this.#log('reconnect scheduled in %sms', info.delay);
       },
-    });
+      // we wrap fetch so we can add logging
+      fetch: (async (input, init) => {
+        const fetchImpl = params.eventSourceOptions?.fetch || globalThis.fetch;
+        this.#log('fetch: init %s %j', input, init);
+        try {
+          const res = await fetchImpl(input, init);
+          this.#log('fetch: res %d', res.status);
+          return res;
+        } catch (err) {
+          this.#warn('fetch: err %s', errToStr(err));
+          throw err;
+        }
+      }) satisfies FetchLike,
+    } satisfies EventSourceOptions);
   }
 
-  public async *listen(event: undefined | 'message' | 'open' | 'error') {
-    this.#log('listening for %s events...', event || 'ALL');
+  public async *listen(eventName?: never) {
+    this.#log('listening...' /* , eventName */);
     // eslint-disable-next-line no-restricted-syntax
     for await (const message of this.#es) {
-      this.#log('got message', message);
+      this.#log('message: %j', message);
 
-      if (!event || message.event === event) {
+      if (!eventName || message.event === eventName) {
         yield this.decode(message);
-        this.#log('yielded message', message);
       } else {
-        this.#log('ignored message as it didnt match %s', event, message);
+        this.#log(
+          'ignored message as it didnt match event %s %j',
+          eventName,
+          message,
+        );
       }
     }
   }
 
-  public async decode(message: EventSourceMessage) {
-    const raw = parseRawMessage<TMessageData>(String(message.data));
-    this.#log('saw raw', JSON.stringify(raw));
+  public async once(eventName?: never) {
+    const listener = this.listen(eventName);
+    const { value } = await listener.next();
+    return value;
+  }
 
-    const encodings = raw.enc.split('/') as EncodingType[];
+  public async decode(message: EventSourceMessage) {
+    const parsed = parseRawMessage<TMessageData>(String(message.data));
+    this.#log('parsed: %j', parsed);
+
+    const encodings = parsed.enc.split('/') as EncodingType[];
 
     const decoded = await encodings.reduceRight<Promise<unknown>>(
       async (data, encoding) => {
@@ -187,25 +208,29 @@ export class OyenEventSource<TMessageData extends Jsonifiable = Jsonifiable> {
           encoding in this.#decoders ? this.#decoders[encoding] : null;
 
         if (!decoder) {
-          throw new Error(
+          throw new EventSourceError(
             `No decoder registered for encoding ${JSON.stringify(encoding)}`,
           );
         }
 
         return decoder(await data, encoding);
       },
-      Promise.resolve(raw.d),
+      Promise.resolve(parsed.d),
     );
 
-    this.#log('decoded message as %j', decoded);
+    this.#log('decoded: %j', decoded);
 
-    if (this.#validateMessage(decoded)) {
-      return {
-        ch: raw.ch,
-        d: decoded,
-        iat: raw.iat,
-      };
+    const maybeValidDecodedMessage = {
+      ch: parsed.ch,
+      d: decoded as unknown as TMessageData,
+      iat: parsed.iat,
+    };
+
+    if (validateDecodedMessage<TMessageData>(maybeValidDecodedMessage)) {
+      return maybeValidDecodedMessage;
     }
+
+    this.#warn('invalid decoded message %j', maybeValidDecodedMessage);
 
     return null;
   }
