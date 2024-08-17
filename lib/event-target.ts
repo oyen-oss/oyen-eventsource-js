@@ -74,7 +74,7 @@ export class OyenEventTarget<T extends Jsonifiable, C extends string = string> {
         const encoder = this.#encoders[encoding];
 
         if (!encoder) {
-          throw new Error(
+          throw new EventTargetError(
             `No encoder registered for encoding ${JSON.stringify(encoding)}`,
           );
         }
