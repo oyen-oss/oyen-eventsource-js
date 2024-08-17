@@ -1,8 +1,11 @@
 # @oyenjs/eventsource
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## Description
+
+Eventsource library with support for automatic encryption and decryption of
+messages for naive end-to-end encryption with an oob pre-shared key
 
 Currently under active development.
 
