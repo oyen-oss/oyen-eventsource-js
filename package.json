@@ -1,6 +1,6 @@
 {
   "name": "@oyenjs/eventsource",
-  "version": "3.0.0",
+  "version": "4.1.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/oyen-oss/oyen-eventsource-js"
