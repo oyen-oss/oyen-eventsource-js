@@ -4,6 +4,9 @@
 
 ## Description
 
+Eventsource library with support for automatic encryption and decryption of
+messages for naive end-to-end encryption with an oob pre-shared key
+
 Currently under active development.
 
 ## Example
