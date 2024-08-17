@@ -1,4 +1,4 @@
-# @oyen-oss/eventsource
+# @oyenjs/eventsource
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -14,7 +14,7 @@ import {
   createAesCbcEncoder,
   OyenEventSource,
   OyenEventTarget,
-} from '@oyen-oss/eventsource';
+} from '@oyenjs/eventsource';
 
 const teamId = 'example';
 const eventSourceId = 'abcd12345';

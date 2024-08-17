@@ -4,7 +4,7 @@ import {
   createAesCbcEncoder,
   OyenEventSource,
   OyenEventTarget,
-} from '@oyen-oss/eventsource';
+} from '@oyenjs/eventsource';
 
 const teamId = 'example';
 const eventSourceId = 'abcd12345';
